@@ -1,10 +1,13 @@
 from django.http import Http404
 from django.utils.module_loading import import_string
-from rest_framework import viewsets, exceptions
+from rest_framework import viewsets, exceptions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from s_store_api.models import Item, Store
 from s_store_api.serialzers import ItemSerializer
 from s_store_api.settings import api_settings
+from s_store_api.utils.store import buy_item
 from s_store_api.utils.wallet import create_wallets_if_user_has_not_of_store
 
 
@@ -33,3 +36,13 @@ class ItemViewSet(Response403To401Mixin, viewsets.ModelViewSet):
         super().initial(request, *args, **kwargs)
         create_wallets_if_user_has_not_of_store(request.user,
                                                 Store.objects.get(pk=request.parser_context['kwargs']['store']))
+
+    @action(detail=True, methods=['post'])
+    def buy(self, request, *args, **kwargs):
+        item = self.get_object()
+        price = item.prices.get(pk=request.data['price'])
+        success = buy_item(request.user, item, price)
+        if success:
+            return Response({'message': 'success'})
+        return Response({'message': "That's not enough."}, status=status.HTTP_400_BAD_REQUEST)
+

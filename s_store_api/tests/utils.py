@@ -1,7 +1,7 @@
 from rest_framework import test
 from django.urls import reverse
 
-from s_store_api.models import Store, Item
+from s_store_api.models import Store, Item, Coin
 from s_store_api.utils.auth import User
 
 
@@ -18,12 +18,15 @@ class BaseAPITestCase(test.APITestCase):
     default_item2: Item
     a_item1: Item
     a_item2: Item
+    world_coin: Coin
+    dollar_coin: Coin
 
     def setUp(self) -> None:
         super().setUp()
         self._set_members()
         self._set_stores()
         self._set_items()
+        self._set_coins()
         self.client.force_login(self.default_user)
 
     def _set_members(self):
@@ -42,6 +45,10 @@ class BaseAPITestCase(test.APITestCase):
         self.a_item1 = Item.objects.get(store=self.store_a.pk, name='item1')
         self.a_item2 = Item.objects.get(store=self.store_a.pk, name='item2')
 
+    def _set_coins(self):
+        self.world_coin = Coin.objects.get(name='world')
+        self.dollar_coin = Coin.objects.get(name='$')
+
 
 def get_list_items_of_store_url(store):
     pk = store if not isinstance(store, Store) else store.pk
@@ -52,3 +59,9 @@ def get_detail_item_url(store, item):
     store_pk = store if not isinstance(store, Store) else store.pk
     item_pk = item if not isinstance(item, Item) else item.pk
     return reverse('stores:items-detail', kwargs={'store': store_pk, 'pk': item_pk})
+
+
+def get_buy_item_url(store, item):
+    store_pk = store if not isinstance(store, Store) else store.pk
+    item_pk = item if not isinstance(item, Item) else item.pk
+    return reverse('stores:items-buy', kwargs={'store': store_pk, 'pk': item_pk})

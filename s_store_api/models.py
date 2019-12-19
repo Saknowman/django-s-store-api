@@ -52,3 +52,16 @@ class Wallet(models.Model):
 
     def __str__(self):
         return "{username}: {value}{coin_name}".format(username=self.user, value=self.value, coin_name=self.coin.name)
+
+
+class Bag(models.Model):
+    user = models.ForeignKey(to=User, related_name='bags', on_delete=models.CASCADE)
+    item = models.ForeignKey(to=Item, related_name='bags', on_delete=models.CASCADE)
+    amount = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'item')
+
+    def __str__(self):
+        return "{username}: {amount}{item_name}".format(username=self.user, amount=self.amount,
+                                                        item_name=self.item.name)

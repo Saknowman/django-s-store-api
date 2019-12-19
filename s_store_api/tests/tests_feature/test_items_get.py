@@ -16,7 +16,6 @@ class ItemsListTest(BaseAPITestCase):
         self.assertFalse(len(response.data) is 0)
         self.assertListEqual([item.pk for item in expect_items],
                              [item['pk'] for item in response.data], response.data)
-        print(response.data)
         for item in response.data:
             self.assertTrue(all([(column in item) for column in expected_response_data_columns]),
                             response.data)
