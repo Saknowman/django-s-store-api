@@ -1,13 +1,22 @@
-from django.contrib.auth import get_user_model
-from rest_framework import status, test
+from rest_framework import test
 
 from s_store_api.models import Store, Item
-
-User = get_user_model()
+from s_store_api.utils.auth import User
 
 
 class BaseAPITestCase(test.APITestCase):
     fixtures = ['test_users.json', 'test_stores_and_items.json']
+
+    admin: User
+    staff_user: User
+    default_user: User
+    user_a: User
+    default_store: Store
+    store_a: Store
+    default_item1: Item
+    default_item2: Item
+    a_item1: Item
+    a_item2: Item
 
     def setUp(self) -> None:
         super().setUp()
