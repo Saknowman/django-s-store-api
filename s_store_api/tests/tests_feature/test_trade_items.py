@@ -1,8 +1,7 @@
-from django.urls import reverse
 from rest_framework import status
 
-from s_store_api.models import Store, Item, Wallet
-from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_detail_item_url, get_buy_item_url
+from s_store_api.models import Wallet
+from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_buy_item_url
 from s_store_api.utils.coin import get_treated_coins_from_store
 from s_store_api.utils.wallet import create_wallet_if_user_has_not
 

@@ -66,27 +66,3 @@ class ItemsDetailTest(BaseAPITestCase):
         response = self.client.get(get_detail_item_url(self.default_store, 90909))
         # Assert
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
-
-
-class GetItemsPermissionTestCase(BaseAPITestCase):
-    def test_get_items___with_out_authentication___404(self):
-        # Arrange
-        self.client.logout()
-        # Act
-        list_response = self.client.get(get_list_items_of_store_url(self.default_store))
-        detail_response = self.client.get(get_detail_item_url(self.default_store, self.default_item1))
-        # Assert
-        self.assertEqual(status.HTTP_404_NOT_FOUND, list_response.status_code)
-        self.assertEqual(status.HTTP_404_NOT_FOUND, detail_response.status_code)
-
-    def test_get_items___store_is_limited_access_store_and_login_user_has_no_read_authorization_of_store___404(self):
-        # Arrange
-        self.default_store.is_limited_access = True
-        self.default_store.save()
-        self.client.force_login(self.user_a)
-        # Arrange
-        list_response = self.client.get(get_list_items_of_store_url(self.default_store))
-        detail_response = self.client.get(get_detail_item_url(self.default_store, self.default_item1))
-        # Assert
-        self.assertEqual(status.HTTP_404_NOT_FOUND, list_response.status_code, list_response.data)
-        self.assertEqual(status.HTTP_404_NOT_FOUND, detail_response.status_code, detail_response.data)
