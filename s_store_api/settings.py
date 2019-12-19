@@ -16,8 +16,7 @@ DEFAULTS = {
         'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.DjangoModelPermissions',
         's_store_api.permissions.item_permissions.IsLimitedStoreUser',
-
-    ]
+    ],
 }
 
 

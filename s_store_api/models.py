@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from django.db import models
 
 from s_store_api.settings import api_settings
+from s_store_api.utils.auth import User
 from s_store_api.utils.store import get_default_limited_customer_group
 
 
@@ -39,3 +40,15 @@ class Price(models.Model):
 
     def __str__(self):
         return "{coin}: {value}".format(coin=self.coin, value=self.value)
+
+
+class Wallet(models.Model):
+    user = models.ForeignKey(to=User, related_name='wallets', on_delete=models.CASCADE)
+    coin = models.ForeignKey(to=Coin, related_name='wallets', on_delete=models.CASCADE)
+    value = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'coin')
+
+    def __str__(self):
+        return "{username}: {value}{coin_name}".format(username=self.user, value=self.value, coin_name=self.coin.name)

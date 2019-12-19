@@ -1,19 +1,7 @@
-from django.urls import reverse
 from rest_framework import status
 
-from s_store_api.models import Store, Item
-from s_store_api.tests.utils import BaseAPITestCase
-
-
-def _get_list_items_of_store_url(store):
-    pk = store if not isinstance(store, Store) else store.pk
-    return reverse('stores:items-list', kwargs={'store': pk})
-
-
-def _get_detail_item_url(store, item):
-    store_pk = store if not isinstance(store, Store) else store.pk
-    item_pk = item if not isinstance(item, Item) else item.pk
-    return reverse('stores:items-detail', kwargs={'store': store_pk, 'pk': item_pk})
+from s_store_api.models import Item
+from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_detail_item_url
 
 
 class ItemsListTest(BaseAPITestCase):
@@ -22,7 +10,7 @@ class ItemsListTest(BaseAPITestCase):
         expected_response_data_columns = ['pk', 'name', 'prices']
         expect_items = Item.objects.filter(store=self.default_store.pk).all()
         # Act
-        response = self.client.get(_get_list_items_of_store_url(self.default_store))
+        response = self.client.get(get_list_items_of_store_url(self.default_store))
         # Assert
         self.assertEqual(status.HTTP_200_OK, response.status_code, response)
         self.assertFalse(len(response.data) is 0)
@@ -44,7 +32,7 @@ class ItemsListTest(BaseAPITestCase):
             with self.subTest(user=user):
                 self.client.force_login(user)
                 # Act
-                response = self.client.get(_get_list_items_of_store_url(self.default_store))
+                response = self.client.get(get_list_items_of_store_url(self.default_store))
                 # Assert
                 self.assertEqual(status.HTTP_200_OK, response.status_code, response)
 
@@ -53,7 +41,7 @@ class ItemsListTest(BaseAPITestCase):
         self.client.logout()
         # Act
         # noinspection PyTypeChecker
-        response = self.client.get(_get_list_items_of_store_url(93939))
+        response = self.client.get(get_list_items_of_store_url(93939))
         # Assert
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
@@ -63,7 +51,7 @@ class ItemsDetailTest(BaseAPITestCase):
         # Arrange
         expected_response_data_columns = ['pk', 'name', 'prices']
         # Act
-        response = self.client.get(_get_detail_item_url(self.default_store, self.default_item1))
+        response = self.client.get(get_detail_item_url(self.default_store, self.default_item1))
         # Assert
         self.assertEqual(status.HTTP_200_OK, response.status_code, response.data)
         self.assertTrue(all([(column in response.data) for column in expected_response_data_columns]), response.data)
@@ -76,7 +64,7 @@ class ItemsDetailTest(BaseAPITestCase):
         self.client.logout()
         # Act
         # noinspection PyTypeChecker
-        response = self.client.get(_get_detail_item_url(self.default_store, 90909))
+        response = self.client.get(get_detail_item_url(self.default_store, 90909))
         # Assert
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
@@ -86,8 +74,8 @@ class GetItemsPermissionTestCase(BaseAPITestCase):
         # Arrange
         self.client.logout()
         # Act
-        list_response = self.client.get(_get_list_items_of_store_url(self.default_store))
-        detail_response = self.client.get(_get_list_items_of_store_url(self.default_store))
+        list_response = self.client.get(get_list_items_of_store_url(self.default_store))
+        detail_response = self.client.get(get_detail_item_url(self.default_store, self.default_item1))
         # Assert
         self.assertEqual(status.HTTP_404_NOT_FOUND, list_response.status_code)
         self.assertEqual(status.HTTP_404_NOT_FOUND, detail_response.status_code)
@@ -98,8 +86,8 @@ class GetItemsPermissionTestCase(BaseAPITestCase):
         self.default_store.save()
         self.client.force_login(self.user_a)
         # Arrange
-        list_response = self.client.get(_get_list_items_of_store_url(self.default_store))
-        detail_response = self.client.get(_get_detail_item_url(self.default_store, self.default_item1))
+        list_response = self.client.get(get_list_items_of_store_url(self.default_store))
+        detail_response = self.client.get(get_detail_item_url(self.default_store, self.default_item1))
         # Assert
         self.assertEqual(status.HTTP_404_NOT_FOUND, list_response.status_code, list_response.data)
         self.assertEqual(status.HTTP_404_NOT_FOUND, detail_response.status_code, detail_response.data)

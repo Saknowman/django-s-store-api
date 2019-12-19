@@ -2,9 +2,10 @@ from django.http import Http404
 from django.utils.module_loading import import_string
 from rest_framework import viewsets, exceptions
 
-from s_store_api.models import Item
+from s_store_api.models import Item, Store
 from s_store_api.serialzers import ItemSerializer
 from s_store_api.settings import api_settings
+from s_store_api.utils.wallet import create_wallets_if_user_has_not_of_store
 
 
 def _array_permission_classes(permission_str_classes: list) -> list:
@@ -28,5 +29,7 @@ class ItemViewSet(Response403To401Mixin, viewsets.ModelViewSet):
     def get_queryset(self):
         return Item.objects.filter(store=self.kwargs['store'])
 
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        create_wallets_if_user_has_not_of_store(request.user,
+                                                Store.objects.get(pk=request.parser_context['kwargs']['store']))

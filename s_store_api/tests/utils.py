@@ -1,4 +1,5 @@
 from rest_framework import test
+from django.urls import reverse
 
 from s_store_api.models import Store, Item
 from s_store_api.utils.auth import User
@@ -40,3 +41,14 @@ class BaseAPITestCase(test.APITestCase):
         self.default_item2 = Item.objects.get(store=self.default_store.pk, name='item2')
         self.a_item1 = Item.objects.get(store=self.store_a.pk, name='item1')
         self.a_item2 = Item.objects.get(store=self.store_a.pk, name='item2')
+
+
+def get_list_items_of_store_url(store):
+    pk = store if not isinstance(store, Store) else store.pk
+    return reverse('stores:items-list', kwargs={'store': pk})
+
+
+def get_detail_item_url(store, item):
+    store_pk = store if not isinstance(store, Store) else store.pk
+    item_pk = item if not isinstance(item, Item) else item.pk
+    return reverse('stores:items-detail', kwargs={'store': store_pk, 'pk': item_pk})
