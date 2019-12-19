@@ -27,3 +27,6 @@ class ItemViewSet(Response403To401Mixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Item.objects.filter(store=self.kwargs['store'])
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)

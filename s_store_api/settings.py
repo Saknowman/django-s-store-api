@@ -9,6 +9,9 @@ DEFAULTS = {
     'ITEM_MODEL': {
         'MAX_LENGTH': 20,
     },
+    'COIN_MODEL': {
+        'MAX_LENGTH': 5,
+    },
     'ITEM_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.DjangoModelPermissions',

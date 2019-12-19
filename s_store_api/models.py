@@ -23,3 +23,19 @@ class Item(models.Model):
 
     def __str__(self):
         return "{store}: {name}".format(store=self.store, name=self.name)
+
+
+class Coin(models.Model):
+    name = models.CharField(max_length=api_settings.COIN_MODEL['MAX_LENGTH'])
+
+    def __str__(self):
+        return self.name
+
+
+class Price(models.Model):
+    item = models.ForeignKey(to=Item, related_name='prices', on_delete=models.CASCADE)
+    coin = models.ForeignKey(to=Coin, related_name='prices', on_delete=models.CASCADE)
+    value = models.IntegerField()
+
+    def __str__(self):
+        return "{coin}: {value}".format(coin=self.coin, value=self.value)

@@ -5,7 +5,7 @@ from s_store_api.utils.auth import User
 
 
 class BaseAPITestCase(test.APITestCase):
-    fixtures = ['test_users.json', 'test_stores_and_items.json']
+    fixtures = ['test_users.json', 'test_data.json']
 
     admin: User
     staff_user: User
