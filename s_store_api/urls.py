@@ -15,5 +15,5 @@ app_name = 'stores'
 
 urlpatterns = [
     path(r'<store>/', include(items_router.urls)),
-    path(r'<item>/', include(prices_router.urls))
+    path(r'items/<item>/', include(prices_router.urls))
 ]

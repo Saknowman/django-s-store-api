@@ -1,6 +1,17 @@
 from django.db import transaction
-from rest_framework import status
+from django.http import Http404
+from rest_framework import status, exceptions
 from rest_framework.response import Response
+
+
+class PermissionDeniedResponseConverterMixin:
+    # noinspection PyMethodMayBeStatic
+    def permission_denied(self, request, message=None):
+        if message is None:
+            raise Http404
+        if request.authenticators and not request.successful_authenticator:
+            raise exceptions.NotAuthenticated()
+        raise exceptions.PermissionDenied(detail=message)
 
 
 def multi_create(view_set, request, *args, **kwargs):

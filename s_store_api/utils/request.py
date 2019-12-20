@@ -11,6 +11,5 @@ def is_request_allowed_only_staff(request):
     }
     if request.method not in table:
         return False
-
     return url_name in table[request.method]
 
