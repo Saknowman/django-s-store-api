@@ -1,9 +1,19 @@
 from django.contrib.auth.models import Group
 from django.db import transaction
+from django.db.models import Q
 
 from s_store_api.utils.auth import User
 from s_store_api.utils.bag import create_bag_if_user_has_not
 from s_store_api.utils.common import get_next_usable_pk
+
+
+def list_stores(user: User):
+    from s_store_api.models import Store
+    my_stores = Store.objects.filter(user=user)
+    unlimited_access_stores = Store.objects.filter(is_limited_access=False)
+    limited_access_and_has_permission_stores = Store.objects.filter(is_limited_access=True,
+                                                                    limited_customer_group__in=user.groups.all())
+    return my_stores | unlimited_access_stores | limited_access_and_has_permission_stores
 
 
 def get_default_limited_customer_group() -> int:

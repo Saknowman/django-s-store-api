@@ -12,10 +12,15 @@ DEFAULTS = {
     'COIN_MODEL': {
         'MAX_LENGTH': 5,
     },
+    'STORE_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+        's_store_api.permissions.store_permissions.IsLimitedStoreUser',
+        's_store_api.permissions.store_permissions.IsStaffAndActionIsAllowedOnlyStaff',
+    ],
     'ITEM_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
         's_store_api.permissions.item_permissions.IsLimitedStoreUser',
-        's_store_api.permissions.item_permissions.IsStaffWhenActionIsAllowedOnlyStaff',
+        's_store_api.permissions.item_permissions.IsStaffAndActionIsAllowedOnlyStaff',
     ],
 }
 

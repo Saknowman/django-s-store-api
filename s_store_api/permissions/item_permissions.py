@@ -17,7 +17,7 @@ class IsLimitedStoreUser(permissions.BasePermission):
         return self.store_permission.has_object_permission(request, view, obj.store)
 
 
-class IsStaffWhenActionIsAllowedOnlyStaff(permissions.BasePermission):
+class IsStaffAndActionIsAllowedOnlyStaff(permissions.BasePermission):
     def __init__(self):
         self.store_permission = StorePermissions_IsStaffAndActionIsAllowedOnlyStaff()
 

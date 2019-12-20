@@ -2,6 +2,14 @@ from django.db import transaction
 from rest_framework import serializers
 
 from .models import Store, Item, Price, Coin
+from .utils.auth import User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk', 'username')
+        read_only_fields = ['pk', 'username']
 
 
 class CoinSerializer(serializers.ModelSerializer):
@@ -23,10 +31,14 @@ class PriceSerializer(serializers.ModelSerializer):
 
 
 class StoreSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(), source='user', write_only=True)
+
     class Meta:
         model = Store
-        fields = ('pk', 'name', 'user')
-        read_only_fields = ('pk', 'user')
+        fields = ('pk', 'name', 'user', 'user_id')
+        read_only_fields = ('pk',)
 
 
 class ItemSerializer(serializers.ModelSerializer):

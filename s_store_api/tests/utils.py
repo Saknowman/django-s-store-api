@@ -37,9 +37,11 @@ class BaseAPITestCase(test.APITestCase):
         self.staff_user = User.objects.get(username='staff_user')
         self.default_user = User.objects.get(username='default_user')
         self.user_a = User.objects.get(username='user_a')
+        self.un_relation_user = User.objects.get(username='un_relation_user')
 
     def _set_stores(self):
         self.default_store = Store.objects.filter(user=self.default_user.pk).first()
+        self.default_store2 = Store.objects.get(name='default_store_2')
         self.store_a = Store.objects.filter(user=self.user_a.pk).first()
 
     def _set_items(self):
@@ -53,6 +55,9 @@ class BaseAPITestCase(test.APITestCase):
         self.dollar_coin = Coin.objects.get(name='$')
         self.yen_coin = Coin.objects.get(name='yen')
         self.pond_coin = Coin.objects.get(name='pond')
+
+
+STORE_LIST_URL = reverse('stores:stores-list')
 
 
 def get_list_items_of_store_url(store):

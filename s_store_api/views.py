@@ -3,12 +3,20 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from s_store_api.models import Item, Store, Price
-from s_store_api.serialzers import ItemSerializer, PriceSerializer
+from s_store_api.serialzers import ItemSerializer, PriceSerializer, StoreSerializer
 from s_store_api.settings import api_settings
 from s_store_api.utils.common import import_string_from_str_list
-from s_store_api.utils.store import buy_item
+from s_store_api.utils.store import buy_item, list_stores
 from s_store_api.utils.views import multi_create, PermissionDeniedResponseConverterMixin
 from s_store_api.utils.wallet import create_wallets_if_user_has_not_of_store
+
+
+class StoreViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet):
+    serializer_class = StoreSerializer
+    permission_classes = import_string_from_str_list(api_settings.STORE_PERMISSION_CLASSES)
+
+    def get_queryset(self):
+        return list_stores(self.request.user)
 
 
 class ItemViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet):

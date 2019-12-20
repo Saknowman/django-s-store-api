@@ -18,6 +18,15 @@
     }
   },
   {
+    "model": "s_store_api.store",
+    "pk": 3,
+    "fields": {
+      "name": "default_store_2",
+      "user": 3,
+      "is_limited_access": false
+    }
+  },
+  {
     "model": "s_store_api.item",
     "pk": 1,
     "fields": {
