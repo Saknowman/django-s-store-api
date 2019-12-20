@@ -1,8 +1,11 @@
 from rest_framework import test
 from django.urls import reverse
+from rest_framework.exceptions import ValidationError
 
 from s_store_api.models import Store, Item, Coin
 from s_store_api.utils.auth import User
+
+validation_error_status = ValidationError.status_code
 
 
 class BaseAPITestCase(test.APITestCase):

@@ -1,8 +1,9 @@
 from rest_framework import status
 
 from s_store_api.models import Wallet, Item
+from s_store_api.settings import api_settings
 from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_buy_item_url, \
-    get_list_prices_of_item_url
+    get_list_prices_of_item_url, validation_error_status
 from s_store_api.utils.coin import get_treated_coins_from_store
 from s_store_api.utils.item import create_item
 from s_store_api.utils.wallet import create_wallet_if_user_has_not
@@ -124,3 +125,57 @@ class SellItemsTestCase(BaseAPITestCase):
         self.assertEqual(status.HTTP_201_CREATED, response.status_code, response.data)
         self.assertEqual(data[0]['value'], target_item.prices.get(coin=data[0]['coin_id']).value)
         self.assertEqual(data[1]['value'], target_item.prices.get(coin=data[1]['coin_id']).value)
+
+    def test_sell_item___send_invalid_parameters___validation_failed(self):
+        # Arrange
+        test_parameters = [
+            {'parameters': {},
+             'errors': {'name': 'required', 'prices_set': 'required'}},
+            {'parameters': {'name': '', 'prices_set': []},
+             'errors': {'name': 'blank'}},
+            {'parameters': {'name': {'aa': 'bb'}, 'prices_set': {}},
+             'errors': {'name': 'invalid', 'prices_set': {'non_field_errors': 'not_a_list'}}},
+            {'parameters': {'name': 'a' * (api_settings.ITEM_MODEL['MAX_LENGTH'] + 1), 'prices_set': []},
+             'errors': {'name': 'max_length'}}
+        ]
+        # Sub Test
+        for test_parameter in test_parameters:
+            parameters = test_parameter['parameters']
+            errors = test_parameter['errors']
+            with self.subTest(parameters=parameters, errors=errors):
+                # Act
+                response = self.client.post(get_list_items_of_store_url(self.default_store), parameters, format='json')
+                # Assert
+                self.assertEqual(validation_error_status, response.status_code)
+                for column, error in response.data.items():
+                    self.assertTrue(column in errors.keys(), "{column}: {error}".format(column=column, error=error))
+                    if isinstance(errors[column], str):
+                        self.assertEqual(error[0].code, errors[column])
+                    elif isinstance(errors[column], dict):
+                        for key, code in errors[column].items():
+                            self.assertEqual(error[key][0].code, code)
+
+    def test_sell_item___send_invalid_prices_set_parameters___validation_failed(self):
+        # Arrange
+        test_parameters = [
+            {'prices_set': [{}, {'value': 1}, {'coin_id': self.world_coin.pk}],
+             'errors': [{'value': 'required', 'coin_id': 'required'}, {'coin_id': 'required'}, {'value': 'required'}]},
+            {'prices_set': [{'value': 1, 'coin_id': 92929}],
+             'errors': [{'coin_id': 'does_not_exist'}]},
+            {'prices_set': [{'value': 'a', 'coin_id': self.world_coin.pk}],
+             'errors': [{'value': 'invalid'}]}
+        ]
+        # Sub Test
+        for test_parameter in test_parameters:
+            parameters = {'name': 'aaa', 'prices_set': test_parameter['prices_set']}
+            errors = test_parameter['errors']
+            with self.subTest(parameters=parameters, errors=errors):
+                # Act
+                response = self.client.post(get_list_items_of_store_url(self.default_store), parameters, format='json')
+                # Assert
+                self.assertEqual(validation_error_status, response.status_code)
+                self.assertTrue('prices_set' in response.data)
+                for i, error in enumerate(errors):
+                    for column, code in error.items():
+                        self.assertTrue(column in response.data['prices_set'][i], response.data)
+                        self.assertEqual(code, response.data['prices_set'][i][column][0].code, response.data)
