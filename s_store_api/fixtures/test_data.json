@@ -87,6 +87,13 @@
     }
   },
   {
+    "model": "s_store_api.coin",
+    "pk": 4,
+    "fields": {
+      "name": "pond"
+    }
+  },
+  {
     "model": "s_store_api.price",
     "pk": 1,
     "fields": {

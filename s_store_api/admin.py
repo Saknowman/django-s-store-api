@@ -1,10 +1,11 @@
 # Register your models here.
 from django.contrib import admin
 
-from s_store_api.models import Store, Item, Coin, Price
+from s_store_api.models import Store, Item, Coin, Price, Wallet
 
 admin.site.register(Coin)
 admin.site.register(Price)
+admin.site.register(Wallet)
 
 
 class PriceInline(admin.TabularInline):
@@ -26,5 +27,4 @@ class StoreAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Item, ItemAdmin)
-
 admin.site.register(Store, StoreAdmin)

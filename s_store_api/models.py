@@ -3,7 +3,8 @@ from django.contrib.auth.models import Group
 from django.db import models
 
 from s_store_api.settings import api_settings
-from s_store_api.utils.store import get_default_limited_customer_group
+from s_store_api.utils.auth import User
+from s_store_api.utils.store import get_default_limited_customer_group, get_default_staff_group
 
 
 class Store(models.Model):
@@ -12,6 +13,8 @@ class Store(models.Model):
     is_limited_access = models.BooleanField(default=False)
     limited_customer_group = models.OneToOneField(to=Group, related_name='customer_group_store',
                                                   on_delete=models.CASCADE, default=get_default_limited_customer_group)
+    staff_group = models.OneToOneField(to=Group, related_name='staff_group_store',
+                                       on_delete=models.CASCADE, default=get_default_staff_group)
 
     def __str__(self):
         return "{user}: {name}".format(user=self.user, name=self.name)
@@ -39,3 +42,28 @@ class Price(models.Model):
 
     def __str__(self):
         return "{coin}: {value}".format(coin=self.coin, value=self.value)
+
+
+class Wallet(models.Model):
+    user = models.ForeignKey(to=User, related_name='wallets', on_delete=models.CASCADE)
+    coin = models.ForeignKey(to=Coin, related_name='wallets', on_delete=models.CASCADE)
+    value = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'coin')
+
+    def __str__(self):
+        return "{username}: {value}{coin_name}".format(username=self.user, value=self.value, coin_name=self.coin.name)
+
+
+class Bag(models.Model):
+    user = models.ForeignKey(to=User, related_name='bags', on_delete=models.CASCADE)
+    item = models.ForeignKey(to=Item, related_name='bags', on_delete=models.CASCADE)
+    amount = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'item')
+
+    def __str__(self):
+        return "{username}: {amount}{item_name}".format(username=self.user, amount=self.amount,
+                                                        item_name=self.item.name)
