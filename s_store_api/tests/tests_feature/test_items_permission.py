@@ -1,6 +1,7 @@
 from rest_framework import status
 
-from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_detail_item_url, get_buy_item_url
+from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_detail_item_url, get_buy_item_url, \
+    get_list_prices_of_item_url
 
 
 class GetItemsPermissionTestCase(BaseAPITestCase):
@@ -47,3 +48,19 @@ class PostItemsPermissionTestCase(BaseAPITestCase):
         response = self.client.post(get_buy_item_url(self.default_store, self.default_item1), data)
         # Assert
         self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_sell_items___user_is_not_store_staff___404(self):
+        # Arrange
+        self.client.force_login(self.user_a)
+        # Act
+        response = self.client.post(get_list_items_of_store_url(self.default_store), {}, format='json')
+        # Assert
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code, response.data)
+
+    def test_add_new_price_for_item___user_is_not_staff___404(self):
+        # Arrange
+        self.client.force_login(self.user_a)
+        # Act
+        response = self.client.post(get_list_prices_of_item_url(self.default_item1), [], format='json')
+        # Assert
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code, response.data)

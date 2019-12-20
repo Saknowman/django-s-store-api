@@ -4,7 +4,7 @@ from django.db import models
 
 from s_store_api.settings import api_settings
 from s_store_api.utils.auth import User
-from s_store_api.utils.store import get_default_limited_customer_group
+from s_store_api.utils.store import get_default_limited_customer_group, get_default_staff_group
 
 
 class Store(models.Model):
@@ -13,6 +13,8 @@ class Store(models.Model):
     is_limited_access = models.BooleanField(default=False)
     limited_customer_group = models.OneToOneField(to=Group, related_name='customer_group_store',
                                                   on_delete=models.CASCADE, default=get_default_limited_customer_group)
+    staff_group = models.OneToOneField(to=Group, related_name='staff_group_store',
+                                       on_delete=models.CASCADE, default=get_default_staff_group)
 
     def __str__(self):
         return "{user}: {name}".format(user=self.user, name=self.name)

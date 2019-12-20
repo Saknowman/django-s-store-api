@@ -4,10 +4,11 @@ from rest_framework import viewsets, exceptions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from s_store_api.models import Item, Store
-from s_store_api.serialzers import ItemSerializer
+from s_store_api.models import Item, Store, Price
+from s_store_api.serialzers import ItemSerializer, PriceSerializer
 from s_store_api.settings import api_settings
 from s_store_api.utils.store import buy_item
+from s_store_api.utils.views import multi_create
 from s_store_api.utils.wallet import create_wallets_if_user_has_not_of_store
 
 
@@ -35,7 +36,7 @@ class ItemViewSet(Response403To401Mixin, viewsets.ModelViewSet):
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
         create_wallets_if_user_has_not_of_store(request.user,
-                                                Store.objects.get(pk=request.parser_context['kwargs']['store']))
+                                                Store.objects.get(pk=self.kwargs['store']))
 
     @action(detail=True, methods=['post'])
     def buy(self, request, *args, **kwargs):
@@ -46,3 +47,28 @@ class ItemViewSet(Response403To401Mixin, viewsets.ModelViewSet):
             return Response({'message': 'success'})
         return Response({'message': "That's not enough."}, status=status.HTTP_400_BAD_REQUEST)
 
+    def perform_create(self, serializer):
+        serializer.save(store=Store.objects.get(pk=self.kwargs.get('store')))
+
+
+class PriceViewSet(Response403To401Mixin, viewsets.ModelViewSet):
+    queryset = Price.objects.all()
+    serializer_class = PriceSerializer
+    permission_classes = _array_permission_classes(api_settings.ITEM_PERMISSION_CLASSES)
+
+    def initial(self, request, *args, **kwargs):
+        item = Item.objects.get(pk=self.kwargs['item'])
+        request.parser_context['kwargs']['store'] = item.store.pk
+        super().initial(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.queryset.filter(item=self.kwargs['item'])
+
+    def check_object_permissions(self, request, obj):
+        super().check_object_permissions(request, obj.item)
+
+    def create(self, request, *args, **kwargs):
+        return multi_create(self, request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(item=Item.objects.get(pk=self.kwargs['item']))

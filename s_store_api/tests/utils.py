@@ -48,6 +48,8 @@ class BaseAPITestCase(test.APITestCase):
     def _set_coins(self):
         self.world_coin = Coin.objects.get(name='world')
         self.dollar_coin = Coin.objects.get(name='$')
+        self.yen_coin = Coin.objects.get(name='yen')
+        self.pond_coin = Coin.objects.get(name='pond')
 
 
 def get_list_items_of_store_url(store):
@@ -65,3 +67,8 @@ def get_buy_item_url(store, item):
     store_pk = store if not isinstance(store, Store) else store.pk
     item_pk = item if not isinstance(item, Item) else item.pk
     return reverse('stores:items-buy', kwargs={'store': store_pk, 'pk': item_pk})
+
+
+def get_list_prices_of_item_url(item):
+    item_pk = item if not isinstance(item, Item) else item.pk
+    return reverse('stores:prices-list', kwargs={'item': item_pk})

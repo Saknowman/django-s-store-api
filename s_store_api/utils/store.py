@@ -3,13 +3,19 @@ from django.db import transaction
 
 from s_store_api.utils.auth import User
 from s_store_api.utils.bag import create_bag_if_user_has_not
+from s_store_api.utils.common import get_next_usable_pk
 
 
 def get_default_limited_customer_group():
-    last_group = Group.objects.last()
-    next_pk = 1 if not last_group else last_group.pk + 1
     group = Group()
-    group.name = 'store__limited_customer_group__' + str(next_pk)
+    group.name = 'store__limited_customer_group__' + str(get_next_usable_pk(Group))
+    group.save()
+    return group.pk
+
+
+def get_default_staff_group():
+    group = Group()
+    group.name = 'store__staff_group__' + str(get_next_usable_pk(Group))
     group.save()
     return group.pk
 

@@ -1,8 +1,10 @@
 from rest_framework import status
 
-from s_store_api.models import Wallet
-from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_buy_item_url
+from s_store_api.models import Wallet, Item
+from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_buy_item_url, \
+    get_list_prices_of_item_url
 from s_store_api.utils.coin import get_treated_coins_from_store
+from s_store_api.utils.item import create_item
 from s_store_api.utils.wallet import create_wallet_if_user_has_not
 
 
@@ -12,7 +14,7 @@ class BuyItemsTestCase(BaseAPITestCase):
         Wallet.objects.filter(user=self.default_user).delete()
         treated_coins = get_treated_coins_from_store(self.default_store)
         # Act
-        response = self.client.get(get_list_items_of_store_url(self.default_store))
+        self.client.get(get_list_items_of_store_url(self.default_store))
         # Assert
         wallets = Wallet.objects.filter(user=self.default_user).all()
         self.assertFalse(len(wallets) == 0, wallets)
@@ -24,7 +26,7 @@ class BuyItemsTestCase(BaseAPITestCase):
         Wallet.objects.filter(user=self.default_user).delete()
         self.client.logout()
         # Act
-        response = self.client.get(get_list_items_of_store_url(self.default_store))
+        self.client.get(get_list_items_of_store_url(self.default_store))
         # Assert
         wallets = Wallet.objects.filter(user=self.default_user).all()
         self.assertTrue(len(wallets) == 0, wallets)
@@ -61,3 +63,64 @@ class BuyItemsTestCase(BaseAPITestCase):
         response = self.client.post(get_buy_item_url(self.default_store, self.default_item1), data)
         wallet = Wallet.objects.get(pk=wallet.pk)
         return response, wallet
+
+
+class SellItemsTestCase(BaseAPITestCase):
+    def test_sell_item___store_owner_and_store_staff_user___201_added_item_at_store(self):
+        # Arrange
+        self.user_a.groups.add(self.default_store.staff_group)
+        users = [self.default_user, self.user_a]
+        data = {
+            'name': 'new_item',
+            'prices_set': [
+                {'coin_id': self.world_coin.pk, 'value': 100},
+                {'coin_id': self.dollar_coin.pk, 'value': 10},
+            ]
+        }
+        # Sub Test
+        for user in users:
+            with self.subTest(user=user):
+                self.client.force_login(user)
+                # Act
+                response = self.client.post(get_list_items_of_store_url(self.default_store), data, format='json')
+                # Assert
+                self.assertEqual(status.HTTP_201_CREATED, response.status_code, response.data)
+                self.assertTrue('pk' in response.data, response.data)
+                new_item = Item.objects.get(pk=response.data['pk'])
+                self.assertEqual(data['name'], new_item.name)
+                self.assertEqual(self.default_store.pk, new_item.store.pk)
+                self.assertEqual(len(data['prices_set']), len(new_item.prices.all()))
+                for i in range(len(data['prices_set'])):
+                    self.assertEqual(data['prices_set'][i]['coin_id'], new_item.prices.all()[i].coin.pk)
+                    self.assertEqual(data['prices_set'][i]['value'], new_item.prices.all()[i].value)
+
+    def test_add_new_price_for_item___one_price___201(self):
+        self.user_a.groups.add(self.default_store.staff_group)
+        users = [self.default_user, self.user_a]
+        target_item = create_item('target_item', self.default_store, [{'coin_id': self.world_coin.pk, 'value': 100}])
+        data = {'coin_id': self.yen_coin.pk, 'value': 1000}
+        # Sub Test
+        for user in users:
+            with self.subTest(user=user):
+                self.client.force_login(user)
+                target_item.prices.filter(coin=data['coin_id']).delete()
+                # Act
+                response = self.client.post(get_list_prices_of_item_url(target_item), data, format='json')
+                # Assert
+                self.assertEqual(status.HTTP_201_CREATED, response.status_code, response.data)
+                self.assertEqual(data['value'], target_item.prices.get(coin=data['coin_id']).value)
+
+    def test_add_new_price_for_item___some_prices___201(self):
+        # Arrange
+        target_item = create_item('target_item', self.default_store, [{'coin_id': self.world_coin.pk, 'value': 100}])
+        data = [
+            {'coin_id': self.yen_coin.pk, 'value': 1000},
+            {'coin_id': self.pond_coin.pk, 'value': 11},
+        ]
+        target_item.prices.filter(coin__in=[data[0]['coin_id'], data[1]['coin_id']]).delete()
+        # Act
+        response = self.client.post(get_list_prices_of_item_url(target_item), data, format='json')
+        # Assert
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code, response.data)
+        self.assertEqual(data[0]['value'], target_item.prices.get(coin=data[0]['coin_id']).value)
+        self.assertEqual(data[1]['value'], target_item.prices.get(coin=data[1]['coin_id']).value)
