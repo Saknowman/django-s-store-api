@@ -4,6 +4,7 @@ from s_store_api.models import Wallet, Item
 from s_store_api.settings import api_settings
 from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_buy_item_url, \
     get_list_prices_of_item_url, validation_error_status
+from s_store_api.utils.bag import create_bag_if_user_has_not
 from s_store_api.utils.coin import get_treated_coins_from_store
 from s_store_api.utils.item import create_item
 from s_store_api.utils.wallet import create_wallet_if_user_has_not
@@ -22,6 +23,16 @@ class BuyItemsTestCase(BaseAPITestCase):
         for wallet in wallets:
             self.assertTrue(wallet.coin in treated_coins)
 
+    def test_access_store___already_has_wallet___wallet_not_created(self):
+        # Arrange
+        target_coin = get_treated_coins_from_store(self.default_store)[0]
+        expected_wallet = create_wallet_if_user_has_not(self.default_user, target_coin)
+        # Act
+        self.client.get(get_list_items_of_store_url(self.default_store))
+        # Assert
+        wallet = Wallet.objects.get(user=self.default_user, coin=target_coin)
+        self.assertEqual(expected_wallet.pk, wallet.pk)
+
     def test_access_store___permission_failed___wallet_not_created(self):
         # Arrange
         Wallet.objects.filter(user=self.default_user).delete()
@@ -38,14 +49,29 @@ class BuyItemsTestCase(BaseAPITestCase):
         wallet = create_wallet_if_user_has_not(self.default_user, self.world_coin)
         wallet.value = default_value
         wallet.save()
-        item_price = self.default_item1.prices.get(coin=self.world_coin.pk)
+        target_price = self.default_item1.prices.get(coin=self.world_coin.pk)
         # Act
-        response, wallet = self._post_buy_item(wallet, item_price)
+        response, wallet = self._post_buy_item(wallet, target_price)
         bag = self.default_user.bags.get(item=self.default_item1.pk)
         # Assert
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertEqual(default_value - item_price.value, wallet.value)
+        self.assertEqual(default_value - target_price.value, wallet.value)
         self.assertEqual(1, bag.amount)
+
+    def test_buy_item___already_has_bag___use_same_bag(self):
+        # Arrange
+        wallet = create_wallet_if_user_has_not(self.default_user, self.world_coin)
+        wallet.value = 1000000
+        wallet.save()
+        target_price = self.default_item1.prices.get(coin=self.world_coin.pk)
+        my_bag = create_bag_if_user_has_not(self.default_user, self.default_item1)
+        # Act
+        response, wallet = self._post_buy_item(wallet, target_price)
+        bag = self.default_user.bags.get(item=self.default_item1.pk)
+        # Assert
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(my_bag.pk, bag.pk)
+        self.assertTrue(1, bag.amount)
 
     def test_buy_item___has_not_enough_money___400(self):
         # Arrange
