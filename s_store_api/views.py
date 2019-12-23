@@ -18,6 +18,15 @@ class StoreViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet
     def get_queryset(self):
         return list_stores(self.request.user)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        result = serializer.data
+        if request.GET.get('items', False) == 'true':
+            items_serializer = ItemSerializer(instance=instance.items.all(), many=True)
+            result['items'] = items_serializer.data
+        return Response(result)
+
 
 class ItemViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet):
     serializer_class = ItemSerializer

@@ -80,3 +80,8 @@ def get_buy_item_url(store, item):
 def get_list_prices_of_item_url(item):
     item_pk = item if not isinstance(item, Item) else item.pk
     return reverse('stores:prices-list', kwargs={'item': item_pk})
+
+
+def get_detail_store_url(store):
+    store_pk = store if not isinstance(store, Store) else store.pk
+    return reverse('stores:stores-detail', kwargs={'pk': store_pk})

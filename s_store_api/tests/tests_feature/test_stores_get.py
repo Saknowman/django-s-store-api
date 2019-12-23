@@ -1,7 +1,7 @@
 from rest_framework import status
 
 from s_store_api.models import Store
-from s_store_api.tests.utils import BaseAPITestCase, STORE_LIST_URL
+from s_store_api.tests.utils import BaseAPITestCase, STORE_LIST_URL, get_detail_store_url
 
 
 class StoreListTest(BaseAPITestCase):
@@ -37,3 +37,33 @@ class StoreListTest(BaseAPITestCase):
         self.assertListEqual(
             [store.pk for store in expected_stores],
             [store['pk'] for store in response.data])
+
+    def test_detail_store___items_parameter_is_false___200_get_with_out_items(self):
+        # Arrange
+        expected_columns = ['pk', 'name', 'user']
+        # Act
+        response = self.client.get(get_detail_store_url(self.default_store))
+        # Assert
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertTrue(all([column in response.data for column in expected_columns]), response.data)
+        self.assertFalse('items' in response.data)
+
+    def test_detail_store____items_parameter_is_true___200_get_with_items(self):
+        # Arrange
+        expected_columns = ['pk', 'name', 'user', 'items']
+        # Act
+        response = self.client.get(get_detail_store_url(self.default_store) + "?items=true")
+        # Assert
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertTrue(all([column in response.data for column in expected_columns]), response.data)
+
+    def test_detail_store___store_is_limited_access_store_and_login_users_has_read_authorization_of_store___200(self):
+        # Arrange
+        self.default_store.is_limited_access = True
+        self.user_a.groups.add(self.default_store.limited_customer_group)
+        self.default_store.save()
+        self.client.force_login(self.user_a)
+        # Act
+        response = self.client.get(get_detail_store_url(self.default_store))
+        # Assert
+        self.assertEqual(status.HTTP_200_OK, response.status_code)

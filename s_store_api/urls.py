@@ -17,7 +17,7 @@ prices_router.register(r'prices', PriceViewSet, 'prices')
 app_name = 'stores'
 
 urlpatterns = [
+    path(r'', include(default_router.urls)),
     path(r'<store>/', include(items_router.urls)),
     path(r'items/<item>/', include(prices_router.urls)),
-    path(r'', include(default_router.urls)),
 ]

@@ -1,0 +1,24 @@
+from rest_framework import status
+
+from s_store_api.tests.utils import BaseAPITestCase, STORE_LIST_URL, get_detail_store_url
+
+
+class GetStoresPermissionTestCase(BaseAPITestCase):
+    def test_get_stores___with_out_authentication___404(self):
+        # Arrange
+        self.client.logout()
+        # Act
+        list_response = self.client.get(STORE_LIST_URL)
+        detail_response = self.client.get(get_detail_store_url(self.default_store))
+        # Assert
+        self.assertEqual(status.HTTP_404_NOT_FOUND, list_response.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, detail_response.status_code)
+
+    def test_get_stores___to_limited_access_store___404(self):
+        # Arrange
+        self.store_a.is_limited_access = True
+        self.store_a.save()
+        # Act
+        detail_response = self.client.get(get_detail_store_url(self.store_a))
+        # Assert
+        self.assertEqual(status.HTTP_404_NOT_FOUND, detail_response.status_code)
