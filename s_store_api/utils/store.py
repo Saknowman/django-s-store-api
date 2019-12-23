@@ -3,7 +3,6 @@ from django.db import transaction
 
 from s_store_api.utils.auth import User
 from s_store_api.utils.bag import create_bag_if_user_has_not
-from s_store_api.utils.common import get_next_usable_pk
 
 
 def list_stores(user: User):

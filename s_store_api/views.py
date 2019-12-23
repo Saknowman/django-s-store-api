@@ -66,12 +66,6 @@ class PriceViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet
         request.parser_context['kwargs']['store'] = item.store.pk
         super().initial(request, *args, **kwargs)
 
-    def get_queryset(self):
-        return self.queryset.filter(item=self.kwargs['item'])
-
-    def check_object_permissions(self, request, obj):
-        super().check_object_permissions(request, obj.item)
-
     def create(self, request, *args, **kwargs):
         return multi_create(self, request, *args, **kwargs)
 

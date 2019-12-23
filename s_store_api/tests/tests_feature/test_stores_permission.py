@@ -1,6 +1,5 @@
 from rest_framework import status
 
-from s_store_api.models import Store
 from s_store_api.tests.utils import BaseAPITestCase, STORE_LIST_URL, get_detail_store_url
 
 
@@ -39,5 +38,31 @@ class OpenStoresPermissionTestCase(BaseAPITestCase):
         self.default_user.groups.remove(self.management_store_group)
         # Act
         response = self.client.post(STORE_LIST_URL, {})
+        # Assert
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+
+class CloseStoresPermissionTestCase(BaseAPITestCase):
+    def test_close_stores___without_authentication__404(self):
+        # Arrange
+        self.client.logout()
+        # Act
+        response = self.client.delete(get_detail_store_url(self.default_store))
+        # Assert
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_close_store___has_not_permission___403(self):
+        # Arrange
+        self.default_user.groups.remove(self.management_store_group)
+        # Act
+        response = self.client.delete(get_detail_store_url(self.default_store))
+        # Assert
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+    def test_close_store___store_is_not_users_store___403(self):
+        # Arrange
+        self.default_user.groups.add(self.management_store_group)
+        # Act
+        response = self.client.delete(get_detail_store_url(self.store_a))
         # Assert
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
