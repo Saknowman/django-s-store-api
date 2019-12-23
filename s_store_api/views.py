@@ -3,12 +3,55 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from s_store_api.models import Item, Store, Price
-from s_store_api.serialzers import ItemSerializer, PriceSerializer
+from s_store_api.serialzers import ItemSerializer, PriceSerializer, StoreSerializer
 from s_store_api.settings import api_settings
+from s_store_api.utils.auth import get_user_or_raise_404, get_users_or_raise_404
 from s_store_api.utils.common import import_string_from_str_list
-from s_store_api.utils.store import buy_item
+from s_store_api.utils.store import buy_item, list_stores, get_staff_user
 from s_store_api.utils.views import multi_create, PermissionDeniedResponseConverterMixin
 from s_store_api.utils.wallet import create_wallets_if_user_has_not_of_store
+
+
+class StoreViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet):
+    serializer_class = StoreSerializer
+    permission_classes = import_string_from_str_list(api_settings.STORE_PERMISSION_CLASSES)
+
+    def get_queryset(self):
+        return list_stores(self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        result = serializer.data
+        if request.GET.get('items', False) == 'true':
+            items_serializer = ItemSerializer(instance=instance.items.all(), many=True)
+            result['items'] = items_serializer.data
+        return Response(result)
+
+    @action(detail=True, methods=['put'])
+    def hire_staff(self, request, *args, **kwargs):
+        instance = self.get_object()
+        staff = get_user_or_raise_404(request.data.get('staff'))
+        staff.groups.add(instance.staff_group)
+        return Response({'message': 'Success hire the staff.'}, status.HTTP_200_OK)
+
+    @action(detail=True, methods=['put'])
+    def dismiss_staff(self, request, *args, **kwargs):
+        instance = self.get_object()
+        staff = get_staff_user(request.data.get('staff'), instance)
+        staff.groups.remove(instance.staff_group)
+        return Response({'message': 'Success dismiss the staff.'}, status.HTTP_200_OK)
+
+    @action(detail=True, methods=['put'])
+    def invite_user_to_limited_access(self, request, *args, **kwargs):
+        instance = self.get_object()
+        users = get_users_or_raise_404(request.data.get('users'))
+        for user in users:
+            user.groups.add(instance.limited_customer_group)
+        return Response({'message': 'Success invite the user to my store.'}, status.HTTP_200_OK)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class ItemViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet):
@@ -45,12 +88,6 @@ class PriceViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet
         item = Item.objects.get(pk=self.kwargs['item'])
         request.parser_context['kwargs']['store'] = item.store.pk
         super().initial(request, *args, **kwargs)
-
-    def get_queryset(self):
-        return self.queryset.filter(item=self.kwargs['item'])
-
-    def check_object_permissions(self, request, obj):
-        super().check_object_permissions(request, obj.item)
 
     def create(self, request, *args, **kwargs):
         return multi_create(self, request, *args, **kwargs)

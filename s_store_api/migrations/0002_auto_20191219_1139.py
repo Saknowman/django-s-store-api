@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import s_store_api.utils.store
+import s_store_api.models
 
 
 class Migration(migrations.Migration):
@@ -21,6 +21,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='store',
             name='limited_customer_group',
-            field=models.OneToOneField(default=s_store_api.utils.store.get_default_limited_customer_group, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='customer_group_store', to='auth.Group'),
+            field=models.OneToOneField(default=s_store_api.models.get_default_limited_customer_group, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='customer_group_store', to='auth.Group'),
         ),
     ]

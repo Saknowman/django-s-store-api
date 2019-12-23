@@ -1,23 +1,19 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.db import transaction
+from rest_framework import exceptions
 
 from s_store_api.utils.auth import User
 from s_store_api.utils.bag import create_bag_if_user_has_not
-from s_store_api.utils.common import get_next_usable_pk
 
 
-def get_default_limited_customer_group() -> int:
-    group = Group()
-    group.name = 'store__limited_customer_group__' + str(get_next_usable_pk(Group))
-    group.save()
-    return group.pk
-
-
-def get_default_staff_group() -> int:
-    group = Group()
-    group.name = 'store__staff_group__' + str(get_next_usable_pk(Group))
-    group.save()
-    return group.pk
+def list_stores(user: User):
+    from s_store_api.models import Store
+    my_stores = Store.objects.filter(user=user)
+    unlimited_access_stores = Store.objects.filter(is_limited_access=False)
+    staff_stores = Store.objects.filter(staff_group__in=user.groups.all())
+    limited_access_and_has_permission_stores = Store.objects.filter(is_limited_access=True,
+                                                                    limited_customer_group__in=user.groups.all())
+    return my_stores | unlimited_access_stores | staff_stores | limited_access_and_has_permission_stores
 
 
 def buy_item(user: User, item, price):
@@ -36,3 +32,37 @@ def buy_item(user: User, item, price):
         bag.amount += 1
         bag.save()
     return None
+
+
+def get_management_store_group():
+    try:
+        return Group.objects.get(name='management_store_group')
+    except Group.DoesNotExist:
+        pass
+    group = Group()
+    group.name = 'management_store_group'
+    group.save()
+
+    from s_store_api.models import Store
+    from django.contrib.contenttypes.models import ContentType
+    content_type = ContentType.objects.get_for_model(Store)
+    permissions = Permission.objects.filter(
+        content_type=content_type,
+        codename__in=['add_store', 'change_store', 'delete_store', 'management_store']).all()
+    for permission in permissions:
+        group.permissions.add(permission)
+    return group
+
+
+def get_staff_user(user_pk, store):
+    try:
+        user = User.objects.get(pk=user_pk)
+        if is_staff(user, store):
+            return user
+        raise exceptions.NotFound
+    except User.DoesNotExist:
+        raise exceptions.NotFound
+
+
+def is_staff(user, store):
+    return store.staff_group in user.groups.all()

@@ -2,6 +2,14 @@ from django.db import transaction
 from rest_framework import serializers
 
 from .models import Store, Item, Price, Coin
+from .utils.auth import User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk', 'username')
+        read_only_fields = ['pk', 'username']
 
 
 class CoinSerializer(serializers.ModelSerializer):
@@ -23,10 +31,17 @@ class PriceSerializer(serializers.ModelSerializer):
 
 
 class StoreSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
     class Meta:
         model = Store
-        fields = ('pk', 'name', 'user')
-        read_only_fields = ('pk', 'user')
+        fields = ('pk', 'name', 'user', 'is_limited_access')
+        read_only_fields = ('pk',)
+
+    def create(self, validated_data):
+        if Store.objects.filter(name=validated_data['name'], user=validated_data['user']).exists():
+            raise serializers.ValidationError("Same name store is already exists in your stores.")
+        return super().create(validated_data)
 
 
 class ItemSerializer(serializers.ModelSerializer):

@@ -4,7 +4,21 @@ from django.db import models
 
 from s_store_api.settings import api_settings
 from s_store_api.utils.auth import User
-from s_store_api.utils.store import get_default_limited_customer_group, get_default_staff_group
+from s_store_api.utils.common import get_next_usable_pk
+
+
+def get_default_limited_customer_group() -> int:
+    group = Group()
+    group.name = 'store__limited_customer_group__' + str(get_next_usable_pk(Group))
+    group.save()
+    return group.pk
+
+
+def get_default_staff_group() -> int:
+    group = Group()
+    group.name = 'store__staff_group__' + str(get_next_usable_pk(Group))
+    group.save()
+    return group.pk
 
 
 class Store(models.Model):
@@ -15,6 +29,12 @@ class Store(models.Model):
                                                   on_delete=models.CASCADE, default=get_default_limited_customer_group)
     staff_group = models.OneToOneField(to=Group, related_name='staff_group_store',
                                        on_delete=models.CASCADE, default=get_default_staff_group)
+
+    class Meta:
+        permissions = (
+            ('management_store', 'Can management store'),
+        )
+        unique_together = ('user', 'name')
 
     def __str__(self):
         return "{user}: {name}".format(user=self.user, name=self.name)
