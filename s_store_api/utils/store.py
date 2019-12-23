@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group, Permission
 from django.db import transaction
+from rest_framework import exceptions
 
 from s_store_api.utils.auth import User
 from s_store_api.utils.bag import create_bag_if_user_has_not
@@ -50,3 +51,17 @@ def get_management_store_group():
     for permission in permissions:
         group.permissions.add(permission)
     return group
+
+
+def get_staff_user(user_pk, store):
+    try:
+        user = User.objects.get(pk=user_pk)
+        if is_staff(user, store):
+            return user
+        raise exceptions.NotFound
+    except User.DoesNotExist:
+        raise exceptions.NotFound
+
+
+def is_staff(user, store):
+    return store.staff_group in user.groups.all()

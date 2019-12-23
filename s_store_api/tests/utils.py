@@ -93,3 +93,13 @@ def get_list_prices_of_item_url(item):
 def get_detail_store_url(store):
     store_pk = store if not isinstance(store, Store) else store.pk
     return reverse('stores:stores-detail', kwargs={'pk': store_pk})
+
+
+def get_hire_staff_url(store):
+    store_pk = store if not isinstance(store, Store) else store.pk
+    return reverse('stores:stores-hire-staff', kwargs={'pk': store_pk})
+
+
+def get_dismiss_staff_url(store):
+    store_pk = store if not isinstance(store, Store) else store.pk
+    return reverse('stores:stores-dismiss-staff', kwargs={'pk': store_pk})

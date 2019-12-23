@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from s_store_api.models import Item, Store, Price
 from s_store_api.serialzers import ItemSerializer, PriceSerializer, StoreSerializer
 from s_store_api.settings import api_settings
+from s_store_api.utils.auth import get_user_or_raise_404
 from s_store_api.utils.common import import_string_from_str_list
-from s_store_api.utils.store import buy_item, list_stores
+from s_store_api.utils.store import buy_item, list_stores, get_staff_user
 from s_store_api.utils.views import multi_create, PermissionDeniedResponseConverterMixin
 from s_store_api.utils.wallet import create_wallets_if_user_has_not_of_store
 
@@ -26,6 +27,20 @@ class StoreViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet
             items_serializer = ItemSerializer(instance=instance.items.all(), many=True)
             result['items'] = items_serializer.data
         return Response(result)
+
+    @action(detail=True, methods=['put'])
+    def hire_staff(self, request, *args, **kwargs):
+        instance = self.get_object()
+        staff = get_user_or_raise_404(request.data.get('staff'))
+        staff.groups.add(instance.staff_group)
+        return Response({'message': 'Success hire the staff.'}, status.HTTP_200_OK)
+
+    @action(detail=True, methods=['put'])
+    def dismiss_staff(self, request, *args, **kwargs):
+        instance = self.get_object()
+        staff = get_staff_user(request.data.get('staff'), instance)
+        staff.groups.remove(instance.staff_group)
+        return Response({'message': 'Success dismiss the staff.'}, status.HTTP_200_OK)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

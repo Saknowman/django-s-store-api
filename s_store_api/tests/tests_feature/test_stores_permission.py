@@ -66,3 +66,33 @@ class CloseStoresPermissionTestCase(BaseAPITestCase):
         response = self.client.delete(get_detail_store_url(self.store_a))
         # Assert
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+
+class UpdateStoresPermissionTestCase(BaseAPITestCase):
+    def test_update_store___without_authentication__404(self):
+        # Arrange
+        self.client.logout()
+        # Act
+        response = self.client.put(get_detail_store_url(self.default_store), {})
+        # Assert
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_update_store___has_not_permission___403(self):
+        # Arrange
+        self.default_user.groups.remove(self.management_store_group)
+        # Act
+        put_response = self.client.put(get_detail_store_url(self.default_store), {})
+        patch_response = self.client.patch(get_detail_store_url(self.default_store), {})
+        # Assert
+        self.assertEqual(status.HTTP_403_FORBIDDEN, put_response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, patch_response.status_code)
+
+    def test_update_store___store_is_not_users_store___403(self):
+        # Arrange
+        self.default_user.groups.add(self.management_store_group)
+        # Act
+        put_response = self.client.put(get_detail_store_url(self.store_a), {})
+        patch_response = self.client.patch(get_detail_store_url(self.store_a), {})
+        # Assert
+        self.assertEqual(status.HTTP_403_FORBIDDEN, put_response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, patch_response.status_code)
