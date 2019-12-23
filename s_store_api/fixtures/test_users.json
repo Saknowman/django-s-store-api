@@ -88,5 +88,23 @@
       "groups": [],
       "user_permissions": []
     }
+  },
+  {
+    "model": "auth.user",
+    "pk": 6,
+    "fields": {
+      "password": "pbkdf2_sha256$180000$TBT9oLlpn8bS$r43toHiegkoxyyTRvAC5HSBGMcDzPEYOyOlm5SbGBro=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "un_relation_user2",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2019-12-18T09:11:59Z",
+      "groups": [],
+      "user_permissions": []
+    }
   }
 ]

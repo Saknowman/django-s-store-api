@@ -10,9 +10,10 @@ def list_stores(user: User):
     from s_store_api.models import Store
     my_stores = Store.objects.filter(user=user)
     unlimited_access_stores = Store.objects.filter(is_limited_access=False)
+    staff_stores = Store.objects.filter(staff_group__in=user.groups.all())
     limited_access_and_has_permission_stores = Store.objects.filter(is_limited_access=True,
                                                                     limited_customer_group__in=user.groups.all())
-    return my_stores | unlimited_access_stores | limited_access_and_has_permission_stores
+    return my_stores | unlimited_access_stores | staff_stores | limited_access_and_has_permission_stores
 
 
 def buy_item(user: User, item, price):

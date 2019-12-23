@@ -2,7 +2,7 @@ from rest_framework import status
 
 from s_store_api.models import Store
 from s_store_api.tests.utils import BaseAPITestCase, STORE_LIST_URL, get_detail_store_url, validation_error_status, \
-    get_hire_staff_url, get_dismiss_staff_url
+    get_hire_staff_url, get_dismiss_staff_url, get_invite_user_to_access_limited_store_url
 
 
 class BaseStoreManagementTestCase(BaseAPITestCase):
@@ -95,3 +95,28 @@ class UpdateStoresTestCase(BaseStoreManagementTestCase):
         # Assert
         self.assertEqual(status.HTTP_404_NOT_FOUND, hire_response.status_code)
         self.assertEqual(status.HTTP_404_NOT_FOUND, dismiss_response.status_code)
+
+    def test_invite_users_to_access_limited_store___is_staff___200(self):
+        # Arrange
+        self.store_a.is_limited_access = True
+        self.store_a.save()
+        self.default_user.groups.add(self.store_a.staff_group)
+        # Act
+        response = self.client.put(get_invite_user_to_access_limited_store_url(self.store_a),
+                                   {'users': [self.un_relation_user.pk, self.un_relation_user2.pk]}, format='json')
+        # Assert
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertTrue(self.store_a.limited_customer_group in self.un_relation_user.groups.all())
+        self.assertTrue(self.store_a.limited_customer_group in self.un_relation_user2.groups.all())
+
+    def test_invite_users_to_access_limited_store___some_user_is_not_exits___404(self):
+        # Arrange
+        self.default_store.is_limited_access = True
+        self.default_store.save()
+        # Act
+        response = self.client.put(get_invite_user_to_access_limited_store_url(self.default_store),
+                                   {'users': [self.un_relation_user.pk, 1232]}, format='json')
+        # Assert
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertFalse(self.default_store.limited_customer_group in self.un_relation_user.groups.all())
+

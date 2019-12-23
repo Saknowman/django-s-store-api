@@ -14,9 +14,9 @@ DEFAULTS = {
     },
     'STORE_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
+        's_store_api.permissions.store_permissions.IsInManagementStoreGroupAndActionIsAllowedOnlyManagementStoreGroup',
         's_store_api.permissions.store_permissions.IsLimitedStoreUser',
         's_store_api.permissions.store_permissions.IsStaffAndActionIsAllowedOnlyStaff',
-        's_store_api.permissions.store_permissions.IsInManagementStoreGroupAndActionIsAllowedOnlyManagementStoreGroup',
         's_store_api.permissions.store_permissions.IsMyStoreAndActionIsAllowedOnlyStoreOwner',
     ],
     'ITEM_PERMISSION_CLASSES': [

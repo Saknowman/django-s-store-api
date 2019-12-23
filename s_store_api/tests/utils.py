@@ -42,6 +42,7 @@ class BaseAPITestCase(test.APITestCase):
         self.default_user = User.objects.get(username='default_user')
         self.user_a = User.objects.get(username='user_a')
         self.un_relation_user = User.objects.get(username='un_relation_user')
+        self.un_relation_user2 = User.objects.get(username='un_relation_user2')
 
     def _set_stores(self):
         self.default_store = Store.objects.filter(user=self.default_user.pk).first()
@@ -74,13 +75,13 @@ def get_list_items_of_store_url(store):
 
 
 def get_detail_item_url(store, item):
-    store_pk = store if not isinstance(store, Store) else store.pk
+    store_pk = _get_store_pk(store)
     item_pk = item if not isinstance(item, Item) else item.pk
     return reverse('stores:items-detail', kwargs={'store': store_pk, 'pk': item_pk})
 
 
 def get_buy_item_url(store, item):
-    store_pk = store if not isinstance(store, Store) else store.pk
+    store_pk = _get_store_pk(store)
     item_pk = item if not isinstance(item, Item) else item.pk
     return reverse('stores:items-buy', kwargs={'store': store_pk, 'pk': item_pk})
 
@@ -91,15 +92,24 @@ def get_list_prices_of_item_url(item):
 
 
 def get_detail_store_url(store):
-    store_pk = store if not isinstance(store, Store) else store.pk
+    store_pk = _get_store_pk(store)
     return reverse('stores:stores-detail', kwargs={'pk': store_pk})
 
 
 def get_hire_staff_url(store):
-    store_pk = store if not isinstance(store, Store) else store.pk
+    store_pk = _get_store_pk(store)
     return reverse('stores:stores-hire-staff', kwargs={'pk': store_pk})
 
 
 def get_dismiss_staff_url(store):
-    store_pk = store if not isinstance(store, Store) else store.pk
+    store_pk = _get_store_pk(store)
     return reverse('stores:stores-dismiss-staff', kwargs={'pk': store_pk})
+
+
+def get_invite_user_to_access_limited_store_url(store):
+    store_pk = _get_store_pk(store)
+    return reverse('stores:stores-invite-user-to-limited-access', kwargs={'pk': store_pk})
+
+
+def _get_store_pk(store):
+    return store if not isinstance(store, Store) else store.pk

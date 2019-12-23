@@ -13,10 +13,13 @@ class IsLimitedStoreUser(permissions.BasePermission):
             return True
         if not obj.is_limited_access:
             return True
-        return is_user_in_group(request.user, obj.limited_customer_group)
+        return is_user_in_group(request.user, obj.limited_customer_group) | is_user_in_group(request.user,
+                                                                                             obj.staff_group)
 
 
 class IsStaffAndActionIsAllowedOnlyStaff(permissions.BasePermission):
+    message = "This action is allowed only staffs."
+
     def has_object_permission(self, request, view, obj: Store):
         if not is_request_allowed_only_staff(request):
             return True
@@ -26,7 +29,7 @@ class IsStaffAndActionIsAllowedOnlyStaff(permissions.BasePermission):
 
 
 class IsInManagementStoreGroupAndActionIsAllowedOnlyManagementStoreGroup(permissions.BasePermission):
-    message = "You don't have authority of store managements."
+    message = "This action is allowed, if you have authority of store managements."
 
     def has_permission(self, request, view):
         if not is_request_allowed_only_management_store_group(request):
@@ -35,7 +38,7 @@ class IsInManagementStoreGroupAndActionIsAllowedOnlyManagementStoreGroup(permiss
 
 
 class IsMyStoreAndActionIsAllowedOnlyStoreOwner(permissions.BasePermission):
-    message = "You aren't this store's owner."
+    message = "This action is allowed only owner."
 
     def has_object_permission(self, request, view, obj):
         if not is_request_allowed_only_store_owner(request):

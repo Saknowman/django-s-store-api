@@ -1,6 +1,7 @@
 from rest_framework import status
 
-from s_store_api.tests.utils import BaseAPITestCase, STORE_LIST_URL, get_detail_store_url
+from s_store_api.tests.utils import BaseAPITestCase, STORE_LIST_URL, get_detail_store_url, get_hire_staff_url, \
+    get_dismiss_staff_url, get_invite_user_to_access_limited_store_url
 
 
 class GetStoresPermissionTestCase(BaseAPITestCase):
@@ -96,3 +97,43 @@ class UpdateStoresPermissionTestCase(BaseAPITestCase):
         # Assert
         self.assertEqual(status.HTTP_403_FORBIDDEN, put_response.status_code)
         self.assertEqual(status.HTTP_403_FORBIDDEN, patch_response.status_code)
+
+    def test_hire_staff___by_staff___403(self):
+        # Arrange
+        self.default_user.groups.add(self.management_store_group)
+        self.default_user.groups.add(self.store_a.staff_group)
+        # Act
+        response = self.client.put(get_hire_staff_url(self.store_a), {'staff': self.un_relation_user})
+        # Assert
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+    def test_dismiss_staff___by_staff___403(self):
+        # Arrange
+        self.default_user.groups.add(self.management_store_group)
+        self.default_user.groups.add(self.store_a.staff_group)
+        # Act
+        response = self.client.put(get_dismiss_staff_url(self.store_a), {'staff': self.un_relation_user})
+        # Assert
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+
+    def test_hire_and_dismiss_staff___is_limited_access___404(self):
+        # Arrange
+        self.store_a.is_limited_access = True
+        self.store_a.save()
+        # Act
+        hire_response = self.client.put(get_hire_staff_url(self.store_a), {'staff': self.un_relation_user})
+        dismiss_response = self.client.put(get_dismiss_staff_url(self.store_a), {'staff': self.un_relation_user})
+        # Assert
+        self.assertEqual(status.HTTP_404_NOT_FOUND, hire_response.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, dismiss_response.status_code)
+
+    def test_invite_users_to_access_limited_store___by_not_staff___403(self):
+        # Arrange
+        self.store_a.is_limited_access = True
+        self.store_a.save()
+        self.default_user.groups.add(self.management_store_group)
+        self.default_user.groups.add(self.store_a.limited_customer_group)
+        # Act
+        response = self.client.put(get_invite_user_to_access_limited_store_url(self.store_a), {})
+        # Assert
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)

@@ -93,8 +93,10 @@ class BuyItemsTestCase(BaseAPITestCase):
 
 
 class SellItemsTestCase(BaseAPITestCase):
-    def test_sell_item___store_owner_and_store_staff_user___201_added_item_at_store(self):
+    def test_sell_item___store_owner_and_store_staff_user_even_limited_access___201_added_item_at_store(self):
         # Arrange
+        self.default_store.is_limited_access = True
+        self.default_store.save()
         self.user_a.groups.add(self.default_store.staff_group)
         users = [self.default_user, self.user_a]
         data = {

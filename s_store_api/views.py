@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from s_store_api.models import Item, Store, Price
 from s_store_api.serialzers import ItemSerializer, PriceSerializer, StoreSerializer
 from s_store_api.settings import api_settings
-from s_store_api.utils.auth import get_user_or_raise_404
+from s_store_api.utils.auth import get_user_or_raise_404, get_users_or_raise_404
 from s_store_api.utils.common import import_string_from_str_list
 from s_store_api.utils.store import buy_item, list_stores, get_staff_user
 from s_store_api.utils.views import multi_create, PermissionDeniedResponseConverterMixin
@@ -41,6 +41,14 @@ class StoreViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet
         staff = get_staff_user(request.data.get('staff'), instance)
         staff.groups.remove(instance.staff_group)
         return Response({'message': 'Success dismiss the staff.'}, status.HTTP_200_OK)
+
+    @action(detail=True, methods=['put'])
+    def invite_user_to_limited_access(self, request, *args, **kwargs):
+        instance = self.get_object()
+        users = get_users_or_raise_404(request.data.get('users'))
+        for user in users:
+            user.groups.add(instance.limited_customer_group)
+        return Response({'message': 'Success invite the user to my store.'}, status.HTTP_200_OK)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
