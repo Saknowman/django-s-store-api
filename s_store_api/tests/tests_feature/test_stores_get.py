@@ -7,7 +7,7 @@ from s_store_api.tests.utils import BaseAPITestCase, STORE_LIST_URL, get_detail_
 class StoreListTest(BaseAPITestCase):
     def test_list_store___there_are_some_stores___200_and_response_data_has_expect_columns(self):
         # Arrange
-        expect_columns_in_response_data = ['pk', 'name', 'user']
+        expect_columns_in_response_data = ['pk', 'name', 'user', 'is_limited_access']
         expect_columns_in_store_user_data = ['pk', 'username']
         self.client.force_login(self.un_relation_user)
         expected_stores = Store.objects.filter(is_limited_access=False).all()
@@ -40,7 +40,7 @@ class StoreListTest(BaseAPITestCase):
 
     def test_detail_store___items_parameter_is_false___200_get_with_out_items(self):
         # Arrange
-        expected_columns = ['pk', 'name', 'user']
+        expected_columns = ['pk', 'name', 'user', 'is_limited_access']
         # Act
         response = self.client.get(get_detail_store_url(self.default_store))
         # Assert

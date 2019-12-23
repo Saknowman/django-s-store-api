@@ -32,13 +32,16 @@ class PriceSerializer(serializers.ModelSerializer):
 
 class StoreSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    user_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.filter(), source='user', write_only=True)
 
     class Meta:
         model = Store
-        fields = ('pk', 'name', 'user', 'user_id')
+        fields = ('pk', 'name', 'user', 'is_limited_access')
         read_only_fields = ('pk',)
+
+    def create(self, validated_data):
+        if Store.objects.filter(name=validated_data['name'], user=validated_data['user']).exists():
+            raise serializers.ValidationError("Same name store is already exists in your stores.")
+        return super().create(validated_data)
 
 
 class ItemSerializer(serializers.ModelSerializer):

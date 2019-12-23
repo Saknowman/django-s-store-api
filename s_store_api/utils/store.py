@@ -1,6 +1,5 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.db import transaction
-from django.db.models import Q
 
 from s_store_api.utils.auth import User
 from s_store_api.utils.bag import create_bag_if_user_has_not
@@ -14,20 +13,6 @@ def list_stores(user: User):
     limited_access_and_has_permission_stores = Store.objects.filter(is_limited_access=True,
                                                                     limited_customer_group__in=user.groups.all())
     return my_stores | unlimited_access_stores | limited_access_and_has_permission_stores
-
-
-def get_default_limited_customer_group() -> int:
-    group = Group()
-    group.name = 'store__limited_customer_group__' + str(get_next_usable_pk(Group))
-    group.save()
-    return group.pk
-
-
-def get_default_staff_group() -> int:
-    group = Group()
-    group.name = 'store__staff_group__' + str(get_next_usable_pk(Group))
-    group.save()
-    return group.pk
 
 
 def buy_item(user: User, item, price):
@@ -46,3 +31,23 @@ def buy_item(user: User, item, price):
         bag.amount += 1
         bag.save()
     return None
+
+
+def get_management_store_group():
+    try:
+        return Group.objects.get(name='management_store_group')
+    except Group.DoesNotExist:
+        pass
+    group = Group()
+    group.name = 'management_store_group'
+    group.save()
+
+    from s_store_api.models import Store
+    from django.contrib.contenttypes.models import ContentType
+    content_type = ContentType.objects.get_for_model(Store)
+    permissions = Permission.objects.filter(
+        content_type=content_type,
+        codename__in=['add_store', 'change_store', 'delete_store', 'management_store']).all()
+    for permission in permissions:
+        group.permissions.add(permission)
+    return group

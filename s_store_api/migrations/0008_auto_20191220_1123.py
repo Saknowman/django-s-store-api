@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import s_store_api.utils.store
+import s_store_api.models
 
 
 class Migration(migrations.Migration):
@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='store',
             name='staff_group',
-            field=models.OneToOneField(default=s_store_api.utils.store.get_default_staff_group, on_delete=django.db.models.deletion.CASCADE, related_name='staff_group_store', to='auth.Group'),
+            field=models.OneToOneField(default=s_store_api.models.get_default_staff_group, on_delete=django.db.models.deletion.CASCADE, related_name='staff_group_store', to='auth.Group'),
         ),
     ]

@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from rest_framework import test
 from django.urls import reverse
 from rest_framework.exceptions import ValidationError
@@ -24,12 +25,15 @@ class BaseAPITestCase(test.APITestCase):
     world_coin: Coin
     dollar_coin: Coin
 
+    management_store_group: Group
+
     def setUp(self) -> None:
         super().setUp()
         self._set_members()
         self._set_stores()
         self._set_items()
         self._set_coins()
+        self._set_permission_groups()
         self.client.force_login(self.default_user)
 
     def _set_members(self):
@@ -55,6 +59,10 @@ class BaseAPITestCase(test.APITestCase):
         self.dollar_coin = Coin.objects.get(name='$')
         self.yen_coin = Coin.objects.get(name='yen')
         self.pond_coin = Coin.objects.get(name='pond')
+
+    def _set_permission_groups(self):
+        from s_store_api.utils.store import get_management_store_group
+        self.management_store_group = get_management_store_group()
 
 
 STORE_LIST_URL = reverse('stores:stores-list')

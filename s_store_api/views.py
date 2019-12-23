@@ -27,6 +27,9 @@ class StoreViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet
             result['items'] = items_serializer.data
         return Response(result)
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
 
 class ItemViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet):
     serializer_class = ItemSerializer
