@@ -1,0 +1,177 @@
+[
+  {
+    "model": "s_store_api.store",
+    "pk": 1,
+    "fields": {
+      "name": "default_store",
+      "user": 3,
+      "is_limited_access": false
+    }
+  },
+  {
+    "model": "s_store_api.store",
+    "pk": 2,
+    "fields": {
+      "name": "store_a",
+      "user": 4,
+      "is_limited_access": false
+    }
+  },
+  {
+    "model": "s_store_api.store",
+    "pk": 3,
+    "fields": {
+      "name": "default_store_2",
+      "user": 3,
+      "is_limited_access": false
+    }
+  },
+  {
+    "model": "s_store_api.item",
+    "pk": 1,
+    "fields": {
+      "name": "item1",
+      "store": 1
+    }
+  },
+  {
+    "model": "s_store_api.item",
+    "pk": 2,
+    "fields": {
+      "name": "item2",
+      "store": 1
+    }
+  },
+  {
+    "model": "s_store_api.item",
+    "pk": 3,
+    "fields": {
+      "name": "item3",
+      "store": 1
+    }
+  },
+  {
+    "model": "s_store_api.item",
+    "pk": 4,
+    "fields": {
+      "name": "item1",
+      "store": 2
+    }
+  },
+  {
+    "model": "s_store_api.item",
+    "pk": 5,
+    "fields": {
+      "name": "item2",
+      "store": 2
+    }
+  },
+  {
+    "model": "s_store_api.item",
+    "pk": 6,
+    "fields": {
+      "name": "item4",
+      "store": 1
+    }
+  },
+  {
+    "model": "s_store_api.coin",
+    "pk": 1,
+    "fields": {
+      "name": "world"
+    }
+  },
+  {
+    "model": "s_store_api.coin",
+    "pk": 2,
+    "fields": {
+      "name": "$"
+    }
+  },
+  {
+    "model": "s_store_api.coin",
+    "pk": 3,
+    "fields": {
+      "name": "yen"
+    }
+  },
+  {
+    "model": "s_store_api.coin",
+    "pk": 4,
+    "fields": {
+      "name": "pond"
+    }
+  },
+  {
+    "model": "s_store_api.price",
+    "pk": 1,
+    "fields": {
+      "item": 1,
+      "coin": 1,
+      "value": 10
+    }
+  },
+  {
+    "model": "s_store_api.price",
+    "pk": 2,
+    "fields": {
+      "item": 1,
+      "coin": 2,
+      "value": 1
+    }
+  },
+  {
+    "model": "s_store_api.price",
+    "pk": 3,
+    "fields": {
+      "item": 1,
+      "coin": 3,
+      "value": 100
+    }
+  },
+  {
+    "model": "s_store_api.price",
+    "pk": 4,
+    "fields": {
+      "item": 2,
+      "coin": 1,
+      "value": 20
+    }
+  },
+  {
+    "model": "s_store_api.price",
+    "pk": 5,
+    "fields": {
+      "item": 2,
+      "coin": 2,
+      "value": 2
+    }
+  },
+  {
+    "model": "s_store_api.price",
+    "pk": 7,
+    "fields": {
+      "item": 3,
+      "coin": 1,
+      "value": 3
+    }
+  },
+  {
+    "model": "s_store_api.price",
+    "pk": 8,
+    "fields": {
+      "item": 4,
+      "coin": 1,
+      "value": 15
+    }
+  },
+  {
+    "model": "s_store_api.price",
+    "pk": 9,
+    "fields": {
+      "item": 5,
+      "coin": 1,
+      "value": 14
+    }
+  }
+]
