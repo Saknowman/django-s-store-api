@@ -1,6 +1,7 @@
 from rest_framework import permissions
 
 from s_store_api.models import Store
+from s_store_api.permissions.common import AndAll
 from s_store_api.utils.auth import is_user_in_group
 from s_store_api.utils.request import is_request_allowed_only_staff, is_request_allowed_only_management_store_group, \
     is_request_allowed_only_store_owner
@@ -44,3 +45,13 @@ class IsMyStoreAndActionIsAllowedOnlyStoreOwner(permissions.BasePermission):
         if not is_request_allowed_only_store_owner(request):
             return True
         return request.user == obj.user
+
+
+class DefaultStorePermissions(AndAll):
+    def __init__(self):
+        super().__init__([
+            permissions.IsAuthenticated(),
+            IsLimitedStoreUser(),
+            IsStaffAndActionIsAllowedOnlyStaff(),
+            IsInManagementStoreGroupAndActionIsAllowedOnlyManagementStoreGroup(),
+            IsMyStoreAndActionIsAllowedOnlyStoreOwner()])
