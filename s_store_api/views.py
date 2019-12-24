@@ -6,6 +6,7 @@ from s_store_api.models import Item, Store, Price
 from s_store_api.serialzers import ItemSerializer, PriceSerializer, StoreSerializer
 from s_store_api.settings import api_settings
 from s_store_api.utils.auth import get_user_or_raise_404, get_users_or_raise_404
+from s_store_api.utils.cash_register import create_cash_register_if_store_has_not_each_coin
 from s_store_api.utils.common import import_string_from_str_list
 from s_store_api.utils.store import buy_item, list_stores, get_staff_user
 from s_store_api.utils.views import multi_create, PermissionDeniedResponseConverterMixin
@@ -65,6 +66,7 @@ class ItemViewSet(PermissionDeniedResponseConverterMixin, viewsets.ModelViewSet)
         super().initial(request, *args, **kwargs)
         create_wallets_if_user_has_not_of_store(request.user,
                                                 Store.objects.get(pk=self.kwargs['store']))
+        create_cash_register_if_store_has_not_each_coin(Store.objects.get(pk=self.kwargs['store']))
 
     @action(detail=True, methods=['post'])
     def buy(self, request, *args, **kwargs):

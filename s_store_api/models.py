@@ -76,6 +76,37 @@ class Wallet(models.Model):
         return "{username}: {value}{coin_name}".format(username=self.user, value=self.value, coin_name=self.coin.name)
 
 
+class CashRegister(models.Model):
+    store = models.ForeignKey(to=Store, related_name='cash_registers', on_delete=models.CASCADE)
+    coin = models.ForeignKey(to=Coin, related_name='cash_registers', on_delete=models.CASCADE)
+    value = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('store', 'coin')
+
+    def __str__(self):
+        return "{store_name}: {value}{coin_name}".format(store_name=self.store.name, value=self.value,
+                                                         coin_name=self.coin.name)
+
+
+class Receipt(models.Model):
+    item = models.ForeignKey(to=Item, null=True, related_name='receipts', on_delete=models.SET_NULL)
+    item_name = models.CharField(max_length=api_settings.ITEM_MODEL['MAX_LENGTH'])
+    item_price = models.CharField(max_length=30)
+    item_num = models.IntegerField(default=1)
+    store = models.ForeignKey(to=Store, null=True, related_name='receipts', on_delete=models.SET_NULL)
+    store_name = models.CharField(max_length=api_settings.STORE_MODEL['MAX_LENGTH'])
+    user = models.ForeignKey(to=User, null=True, related_name='receipts', on_delete=models.SET_NULL)
+    sold_date_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{store}:{item_name}:{value} x{num} ({datetime})".format(store=self.store_name,
+                                                                        item_name=self.item_name,
+                                                                        value=self.item_price, num=self.item_num,
+                                                                        datetime=self.sold_date_time.strftime(
+                                                                            "%d %b %Y %H:%M"), )
+
+
 class Bag(models.Model):
     user = models.ForeignKey(to=User, related_name='bags', on_delete=models.CASCADE)
     item = models.ForeignKey(to=Item, related_name='bags', on_delete=models.CASCADE)
