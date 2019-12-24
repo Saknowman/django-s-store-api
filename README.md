@@ -14,6 +14,7 @@ We need to hook **django-s-store-api** into our project.
     ```python:project/settings.py
     INSTALLED_APPS = (
         ...,
+        'rest_framework',
         's_store_api',
     )
     ```
