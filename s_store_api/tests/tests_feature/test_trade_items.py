@@ -1,6 +1,6 @@
 from rest_framework import status
 
-from s_store_api.models import Wallet, Item, CashRegister
+from s_store_api.models import Wallet, Item, CashRegister, Receipt
 from s_store_api.settings import api_settings
 from s_store_api.tests.utils import BaseAPITestCase, get_list_items_of_store_url, get_buy_item_url, \
     get_list_prices_of_item_url, validation_error_status
@@ -58,10 +58,15 @@ class BuyItemsTestCase(BaseAPITestCase):
         response, wallet = self._post_buy_item(wallet, target_price)
         bag = self.default_user.bags.get(item=self.default_item1.pk)
         cash_register = CashRegister.objects.get(store=self.default_store, coin=self.world_coin)
+        receipt = Receipt.objects.get(store=self.default_store, item=self.default_item1, user=self.default_user)
         # Assert
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(default_value - target_price.value, wallet.value)
         self.assertEqual(cash_register.value, target_price.value, cash_register.value)
+        self.assertEqual(receipt.item_name, self.default_item1.name)
+        self.assertEqual(receipt.item_num, 1)
+        self.assertTrue(str(target_price.value) in receipt.item_price)
+        self.assertTrue(str(target_price.coin.name) in receipt.item_price)
         self.assertEqual(1, bag.amount)
 
     def test_buy_item___already_has_bag___use_same_bag(self):
@@ -92,6 +97,8 @@ class BuyItemsTestCase(BaseAPITestCase):
         self.assertEqual(wallet.value, 0)
         cash_register = CashRegister.objects.get(store=self.default_store, coin=self.world_coin)
         self.assertEqual(cash_register.value, 0)
+        self.assertFalse(
+            Receipt.objects.filter(store=self.default_store, item=self.default_item1, user=self.default_user).exists())
 
     def _post_buy_item(self, wallet, item_price):
         data = {'price': item_price.pk}

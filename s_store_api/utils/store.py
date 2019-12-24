@@ -5,6 +5,7 @@ from rest_framework import exceptions
 from s_store_api.models import CashRegister
 from s_store_api.utils.auth import User
 from s_store_api.utils.bag import create_bag_if_user_has_not
+from s_store_api.utils.receipt import issue_receipt
 
 
 def list_stores(user: User):
@@ -32,6 +33,7 @@ def buy_item(user: User, item, price):
         wallet.save()
         cash_register.value += price.value
         cash_register.save()
+        issue_receipt(price, item.store, user)
         bag = create_bag_if_user_has_not(user, item)
         bag.amount += 1
         bag.save()
