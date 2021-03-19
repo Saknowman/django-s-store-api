@@ -21,7 +21,7 @@ setuptools.setup(
         's_store_api.utils'
     ],
     license="MIT",
-    install_requires=["Django>=3.0", "djangorestframework==3.11"],
+    install_requires=["Django>=3.0", "djangorestframework==3.11.2"],
     classifiers=[
         'Framework :: Django :: 3.0',
         'Programming Language :: Python',
